@@ -85,11 +85,11 @@ router.delete("/:commentId", authenticateJWT, async (req, res) => {
 
     const userId = verifyJWT(req.headers.authorization.split(" ")[1]);
 
+    const comment = await Comment.findById(commentId);
+
     if (comment.author.toString() !== userId) {
       return res.status(403).json({ message: "Forbidden" });
     }
-
-    const comment = await Comment.findById(commentId);
 
     if (!comment) {
       return res.status(404).json({ message: "Comment not found" });

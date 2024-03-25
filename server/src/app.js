@@ -8,6 +8,7 @@ const authRoutes = require("./routes/authRoutes");
 const postRoutes = require("./routes/postRoutes");
 const tagRoutes = require("./routes/tagRoutes");
 const commentRoutes = require("./routes/commentRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.use("/auth", authRoutes);
 app.use("/posts", postRoutes);
 app.use("/tags", tagRoutes);
 app.use("/comments", commentRoutes);
+app.use("/users", userRoutes);
 
 app.listen(PORT, () => {
   console.log(`[server]: Server is running at http://localhost:${PORT}`);

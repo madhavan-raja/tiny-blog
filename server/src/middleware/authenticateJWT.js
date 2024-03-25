@@ -1,7 +1,5 @@
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
 const authenticateJWT = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
 
@@ -11,7 +9,7 @@ const authenticateJWT = (req, res, next) => {
       .json({ message: "Authentication failed: Missing token" });
   }
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
     if (err) {
       return res
         .status(403)
