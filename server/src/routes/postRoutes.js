@@ -2,6 +2,7 @@ const express = require("express");
 
 const User = require("../models/user");
 const Post = require("../models/post");
+const Comment = require("../models/comment");
 const Tag = require("../models/tag");
 
 const authenticateJWT = require("../middleware/authenticateJWT");
@@ -12,7 +13,7 @@ const router = express.Router();
 // Get all posts
 router.get("/", async (req, res) => {
   try {
-    const posts = await Post.find().populate("author");
+    const posts = await Post.find();
 
     res.status(200).json(posts);
   } catch (error) {
@@ -56,6 +57,8 @@ router.post("/", authenticateJWT, async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
+    const user = await User.findById(userId);
+
     let tagIds = [];
     for (tagName of tags) {
       const tag = await Tag.findOne({ name: tagName });
@@ -64,19 +67,17 @@ router.post("/", authenticateJWT, async (req, res) => {
         return res.status(404).json({ message: "Tag not found" });
       }
 
-      tagIds.push(tag);
+      tagIds.push(tag._id);
     }
 
     const newPost = new Post({
       title,
       content,
-      author: userId,
+      author: user._id,
       tags: tagIds,
     });
 
-    const user = await User.findById(userId);
-    user.posts.push(newPost);
-    await user.save();
+    user.posts.push(newPost._id);
 
     for (tagName of tags) {
       const tag = await Tag.findOne({ name: tagName });
@@ -85,10 +86,11 @@ router.post("/", authenticateJWT, async (req, res) => {
         return res.status(404).json({ message: "Tag not found" });
       }
 
-      tag.posts.push(newPost);
+      tag.posts.push(newPost._id);
       await tag.save();
     }
 
+    await user.save();
     await newPost.save();
 
     res.status(201).json(newPost);
@@ -117,7 +119,6 @@ router.delete("/:postId", authenticateJWT, async (req, res) => {
 
     const user = await User.findById(userId);
     user.posts = user.posts.filter((p) => p.toString() !== postId);
-    await user.save();
 
     for (tag of post.tags) {
       tag = await Tag.findById(tag);
@@ -125,6 +126,8 @@ router.delete("/:postId", authenticateJWT, async (req, res) => {
       await tag.save();
     }
 
+    await user.save();
+    await Comment.deleteMany({ post: postId });
     await Post.deleteOne({ _id: postId });
 
     res.status(204).end();

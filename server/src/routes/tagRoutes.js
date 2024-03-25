@@ -10,7 +10,7 @@ const router = express.Router();
 // Get all tags
 router.get("/", async (req, res) => {
   try {
-    const tags = await Tag.find().populate("name");
+    const tags = await Tag.find();
 
     res.status(200).json(tags);
   } catch (error) {
