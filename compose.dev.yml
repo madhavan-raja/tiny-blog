@@ -10,7 +10,6 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
   mongo_db:
-    command: mongod --quiet --logpath /dev/null
     ports:
       - 27017:27017
     volumes:
