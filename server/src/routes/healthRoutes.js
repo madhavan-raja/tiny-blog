@@ -2,6 +2,7 @@ const express = require("express");
 
 const router = express.Router();
 
+// Check health
 router.get("/", async (req, res) => {
   try {
     res.status(200).json({ message: "OK" });

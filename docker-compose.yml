@@ -31,6 +31,7 @@ services:
       - WATCHPACK_POLLING=true
   mongo_db:
     image: mongo:latest
+    command: mongod --quiet --logpath /dev/null
     restart: always
     ports:
       - 27017:27017
