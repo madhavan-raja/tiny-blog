@@ -1,11 +1,10 @@
 const express = require("express");
-const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
 const Post = require("../models/post");
-const authenticateJWT = require("../middleware/authenticateJWT");
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const authenticateJWT = require("../middleware/authenticateJWT");
+const verifyJWT = require("../middleware/verifyJWT");
 
 const router = express.Router();
 
@@ -19,9 +18,7 @@ router.post("/", authenticateJWT, async (req, res) => {
         .json({ message: "Title and content are required" });
     }
 
-    const token = req.headers.authorization?.split(" ")[1];
-    const decodedToken = jwt.verify(token, JWT_SECRET);
-    const userId = decodedToken.userId;
+    const userId = verifyJWT(req.headers.authorization.split(" ")[1]);
 
     const newPost = new Post({ title, content, author: userId });
     await newPost.save();

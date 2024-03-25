@@ -8,4 +8,4 @@ const postSchema = new mongoose.Schema({
   tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tag" }],
 });
 
-module.export = mongoose.model("Post", postSchema);
+module.exports = mongoose.model("Post", postSchema);
