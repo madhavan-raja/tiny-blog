@@ -7,7 +7,7 @@ const verifyJWT = require("../middleware/verifyJWT");
 
 const router = express.Router();
 
-// Get all tags
+// Get All Tags
 router.get("/", async (req, res) => {
   try {
     const tags = await Tag.find();
@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get one tag
+// Get Tag
 router.get("/:tagId", async (req, res) => {
   try {
     const { tagId } = req.params;
@@ -37,25 +37,7 @@ router.get("/:tagId", async (req, res) => {
   }
 });
 
-// Get tag by name
-router.get("/name/:tagName", async (req, res) => {
-  try {
-    const { tagName } = req.params;
-
-    const tag = await Tag.findOne({ name: tagName });
-
-    if (!tag) {
-      return res.status(404).json({ message: "Tag not found" });
-    }
-
-    res.status(200).json(tag);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// Create tag
+// Create Tag
 router.post("/", authenticateJWT, async (req, res) => {
   try {
     const { name } = req.body;

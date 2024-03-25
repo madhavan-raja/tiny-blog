@@ -17,6 +17,7 @@ const authenticateJWT = (req, res, next) => {
         .status(403)
         .json({ message: "Authentication failed: Invalid token" });
     }
+
     req.user = user;
     next();
   });

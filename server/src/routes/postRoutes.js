@@ -10,7 +10,7 @@ const verifyJWT = require("../middleware/verifyJWT");
 
 const router = express.Router();
 
-// Get all posts
+// Get All Posts
 router.get("/", async (req, res) => {
   try {
     const posts = await Post.find();
@@ -22,7 +22,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get one post
+// Get Post
 router.get("/:postId", async (req, res) => {
   try {
     const { postId } = req.params;
@@ -40,16 +40,10 @@ router.get("/:postId", async (req, res) => {
   }
 });
 
-// Create post
+// Create Post
 router.post("/", authenticateJWT, async (req, res) => {
   try {
     const { title, content, tags } = req.body;
-
-    if (!title || !content) {
-      return res
-        .status(400)
-        .json({ message: "Title and content are required" });
-    }
 
     const userId = verifyJWT(req.headers.authorization.split(" ")[1]);
 
@@ -57,14 +51,18 @@ router.post("/", authenticateJWT, async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const user = await User.findById(userId);
+    if (!title || !content) {
+      return res
+        .status(400)
+        .json({ message: "Title and content are required" });
+    }
 
     let tagIds = [];
     for (tagName of tags) {
       const tag = await Tag.findOne({ name: tagName });
 
       if (!tag) {
-        return res.status(404).json({ message: "Tag not found" });
+        return res.status(400).json({ message: "Invalid Tag" });
       }
 
       tagIds.push(tag._id);
@@ -73,25 +71,22 @@ router.post("/", authenticateJWT, async (req, res) => {
     const newPost = new Post({
       title,
       content,
-      author: user._id,
+      author: userId,
       tags: tagIds,
     });
 
+    const user = await User.findById(userId);
     user.posts.push(newPost._id);
 
     for (tagName of tags) {
       const tag = await Tag.findOne({ name: tagName });
 
-      if (!tag) {
-        return res.status(404).json({ message: "Tag not found" });
-      }
-
       tag.posts.push(newPost._id);
       await tag.save();
     }
 
-    await user.save();
     await newPost.save();
+    await user.save();
 
     res.status(201).json(newPost);
   } catch (error) {
@@ -100,7 +95,7 @@ router.post("/", authenticateJWT, async (req, res) => {
   }
 });
 
-// Delete one post
+// Delete Post
 router.delete("/:postId", authenticateJWT, async (req, res) => {
   try {
     const { postId } = req.params;
@@ -126,9 +121,9 @@ router.delete("/:postId", authenticateJWT, async (req, res) => {
       await tag.save();
     }
 
+    await Post.deleteOne({ _id: postId });
     await user.save();
     await Comment.deleteMany({ post: postId });
-    await Post.deleteOne({ _id: postId });
 
     res.status(204).end();
   } catch (error) {

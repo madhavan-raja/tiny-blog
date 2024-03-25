@@ -8,7 +8,7 @@ const verifyJWT = require("../middleware/verifyJWT");
 
 const router = express.Router();
 
-// Get all comments
+// Get All Comments
 router.get("/", async (req, res) => {
   try {
     const comments = await Comment.find();
@@ -20,7 +20,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Get one comment
+// Get Comment
 router.get("/:commentId", async (req, res) => {
   try {
     const { commentId } = req.params;
@@ -38,15 +38,11 @@ router.get("/:commentId", async (req, res) => {
   }
 });
 
-// Create comment
+// Create Comment
 router.post("/:postId", authenticateJWT, async (req, res) => {
   try {
     const { content } = req.body;
     const { postId } = req.params;
-
-    if (!content) {
-      return res.status(400).json({ message: "Content is required" });
-    }
 
     const userId = verifyJWT(req.headers.authorization.split(" ")[1]);
 
@@ -60,6 +56,10 @@ router.post("/:postId", authenticateJWT, async (req, res) => {
       return res.status(404).json({ message: "Post not found" });
     }
 
+    if (!content) {
+      return res.status(400).json({ message: "Content is required" });
+    }
+
     const newComment = new Comment({
       post: postId,
       author: userId,
@@ -67,9 +67,9 @@ router.post("/:postId", authenticateJWT, async (req, res) => {
     });
 
     post.comments.push(newComment._id);
-    await post.save();
 
     await newComment.save();
+    await post.save();
 
     res.status(201).json(newComment);
   } catch (error) {
@@ -78,21 +78,21 @@ router.post("/:postId", authenticateJWT, async (req, res) => {
   }
 });
 
-// Delete one comment
+// Delete Comment
 router.delete("/:commentId", authenticateJWT, async (req, res) => {
   try {
     const { commentId } = req.params;
 
     const userId = verifyJWT(req.headers.authorization.split(" ")[1]);
 
+    if (comment.author.toString() !== userId) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
     const comment = await Comment.findById(commentId);
 
     if (!comment) {
       return res.status(404).json({ message: "Comment not found" });
-    }
-
-    if (comment.author.toString() !== userId) {
-      return res.status(403).json({ message: "Forbidden" });
     }
 
     const post = await Post.findById(comment.post);
@@ -101,8 +101,8 @@ router.delete("/:commentId", authenticateJWT, async (req, res) => {
       (comment) => comment.toString() !== commentId
     );
 
-    await post.save();
     await Comment.deleteOne({ _id: commentId });
+    await post.save();
 
     res.status(204).end();
   } catch (error) {
