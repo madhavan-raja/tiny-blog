@@ -21,7 +21,10 @@ router.get("/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).populate({
+      path: "posts",
+      select: "_id title",
+    });
     if (!user) {
       return res.status(400).json({ message: "Invalid user" });
     }

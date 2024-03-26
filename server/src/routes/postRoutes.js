@@ -13,7 +13,12 @@ const router = express.Router();
 // Get All Posts
 router.get("/", async (req, res) => {
   try {
-    const posts = await Post.find();
+    const posts = await Post.find()
+      .populate({
+        path: "author",
+        select: "_id username",
+      })
+      .populate({ path: "tags", select: "_id name" });
 
     res.status(200).json(posts);
   } catch (error) {
@@ -27,7 +32,17 @@ router.get("/:postId", async (req, res) => {
   try {
     const { postId } = req.params;
 
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId)
+      .populate({
+        path: "author",
+        select: "_id username",
+      })
+      .populate({
+        path: "comments",
+        select: "_id author content",
+        populate: { path: "author", select: "_id username" },
+      })
+      .populate({ path: "tags", select: "_id name" });
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
