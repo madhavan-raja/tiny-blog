@@ -1,6 +1,4 @@
-FROM node:18-alpine
-
-ENV NODE_ENV development
+FROM node:18
 
 WORKDIR /app
 ENV PATH /app/node_modules/.bin:$PATH
@@ -11,6 +9,6 @@ RUN npm install
 
 COPY . .
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]
 
 EXPOSE 3000
