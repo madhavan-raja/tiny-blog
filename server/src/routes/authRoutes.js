@@ -1,6 +1,9 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 
+const authenticateJWT = require("../middleware/authenticateJWT");
+const verifyJWT = require("../middleware/verifyJWT");
+
 const User = require("../models/user");
 
 const router = express.Router();
@@ -53,6 +56,20 @@ router.post("/login", async (req, res) => {
     );
 
     res.json({ token });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Me
+router.get("/me", authenticateJWT, async (req, res) => {
+  try {
+    const userId = verifyJWT(req.headers.authorization.split(" ")[1]);
+
+    const user = await User.findById(userId).select("_id username");
+
+    res.status(200).json(user);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
