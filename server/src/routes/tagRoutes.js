@@ -24,7 +24,10 @@ router.get("/:tagId", async (req, res) => {
   try {
     const { tagId } = req.params;
 
-    const tag = await Tag.findById(tagId);
+    const tag = await Tag.findById(tagId).populate({
+      path: "posts",
+      select: "_id title",
+    });
 
     if (!tag) {
       return res.status(404).json({ message: "Tag not found" });
