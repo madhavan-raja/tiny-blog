@@ -31,3 +31,7 @@ If you do not have Just, you can directly run the command in the `Justfile`
 ```sh
 docker compose -f compose.override.yml -f compose.dev.yml up --build
 ```
+
+## Testing
+
+Testing is not automated but the server endpoints can be tested using the given Postman Collection.
