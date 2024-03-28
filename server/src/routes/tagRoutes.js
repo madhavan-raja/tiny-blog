@@ -26,7 +26,11 @@ router.get("/:tagId", async (req, res) => {
 
     const tag = await Tag.findById(tagId).populate({
       path: "posts",
-      select: "_id title",
+      select: "_id title author tags content comments",
+      populate: [
+        { path: "author", select: "_id username" },
+        { path: "tags", select: "_id name" },
+      ],
     });
 
     if (!tag) {

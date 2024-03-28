@@ -4,12 +4,11 @@ import { useState } from "react";
 import { useRouter } from 'next/navigation'
 import { useCookies } from 'next-client-cookies';
 
-export default function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+const LoginPage = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   const cookies = useCookies();
-
   const router = useRouter()
 
   const handleSubmit = async (e) => {
@@ -38,20 +37,52 @@ export default function Login() {
   }
 
   return (
-    <main>
-      <div className="py-20 max-w-4xl mx-auto flex flex-col space-y-4">
-        <form onSubmit={handleSubmit}>
-          <label>Username:</label>
-          <input id="uername" onChange={(e) => {
-              setUsername(e.target.value);
-            }} className="border border-1 border-black rounded-md" />
-          <label>Password:</label>
-          <input id="password" type="password" onChange={(e) => {
-              setPassword(e.target.value);
-            }} className="border border-1 border-black rounded-md" />
-          <button type="submit" className="border border-1 bg-gray-200">Login</button>
-        </form>
+    <div className="container mx-auto p-20">
+      <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <h2 className="text-3xl font-bold mb-4">Login</h2>
+
+        {/* Username */}
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
+            Username
+          </label>
+          <input
+            className="w-full p-2 border rounded-md"
+            type="text"
+            id="username"
+            placeholder="Enter username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
+
+        {/* Password */}
+        <div className="mb-6">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+            Password
+          </label>
+          <input
+            className="w-full p-2 border rounded-md"
+            type="password"
+            id="password"
+            placeholder="Enter password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+
+        {/* Submit Button */}
+        <div className="text-center">
+          <button
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            onClick={handleSubmit}
+          >
+            Login
+          </button>
+        </div>
       </div>
-    </main>
+    </div>
   );
-}
+};
+
+export default LoginPage;

@@ -4,15 +4,18 @@ import { useState } from "react";
 import { useRouter } from 'next/navigation'
 import { useCookies } from 'next-client-cookies';
 
-function Post({postInfo}) {
-  const [commentContent, setCommentContent] = useState("");
+const Post = ({ postInfo }) => {
+  const { title, author, tags, content, comments } = postInfo;
+  const numberOfComments = comments.length;
+
+  const [newComment, setNewComment] = useState("");
 
   const cookies = useCookies();
   const router = useRouter();
 
   const token = cookies.get('token');
 
-  const handleDelete = async (e) => {
+  const handleDeletePost = async (e) => {
     e.preventDefault();
     
     try {
@@ -33,33 +36,6 @@ function Post({postInfo}) {
       else {
         router.push(`/`)
       }
-    }
-    catch (err) {
-      console.log("Error:", err)
-    }
-  }
-
-  const handleComment = async (e) => {
-    e.preventDefault();
-    
-    try {
-
-      let res = await fetch(`/api/comments/${postInfo._id}`, {
-        method: 'POST',
-        body: JSON.stringify({
-          "content": commentContent
-        }),
-        headers: {
-          'content-type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        }
-      });
-
-      if (res.status == 401) {
-        return router.push("/login")
-      }
-
-      router.refresh();
     }
     catch (err) {
       console.log("Error:", err)
@@ -88,56 +64,109 @@ function Post({postInfo}) {
     }
   }
 
+  const handleCreateComment = async (e) => {
+    e.preventDefault();
+    
+    try {
+
+      let res = await fetch(`/api/comments/${postInfo._id}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          "content": newComment
+        }),
+        headers: {
+          'content-type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      if (res.status == 401) {
+        return router.push("/login")
+      }
+
+      router.refresh();
+    }
+    catch (err) {
+      console.log("Error:", err)
+    }
+  }
+
   return (
-    <div className="flex flex-col space-y-4">
-      <div className="p-4 rounded-md bg-gray-100 flex flex-col space-y-2">
-        <div className="flex justify-between">
-          <a
-            href={`/posts/${postInfo._id}`}
-            className="underline-offset-2 hover:underline"
-          >
-            <h1 className="text-xl">{postInfo.title}</h1>
-          </a>
-          <button onClick={handleDelete} className="bg-red-500 text-white rounded-md p-1">Delete</button>
+    <div className="container mx-auto p-4">
+      <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        {/* Post Title */}
+        <h2 className="text-3xl font-bold">
+          <h1>{title}</h1>
+        </h2>
+
+        {/* Post Meta */}
+        <div>
+          <a href={`/authors/${author._id}`} className="text-sm text-gray-600 hover:underline">By {author.username}</a>
         </div>
-        <span className="text-sm">
-          By{" "}
-          <a
-            href={`/users/${postInfo.author._id}`}
-            className="underline-offset-2 hover:underline"
-          >
-            {postInfo.author.username}
-          </a>
-        </span>
-        <div className="flex flex-row space-x-2">
-          {postInfo.tags.map((tag) =>
-            <a key={tag._id} href={`/tags/${tag._id}`}>
-              <span className="text-sm bg-gray-200 rounded-md p-1">{tag.name}</span>
+
+        {/* Tags */}
+        <div className="mb-4">
+          {tags.map((tag, index) => (
+            <a key={index} href={`/tags/${tag._id}`} className="inline-block bg-gray-200 rounded-full px-2 py-1 text-xs font-semibold text-gray-700 mr-2 hover:underline">
+              {tag.name}
             </a>
-          )}
+          ))}
         </div>
-        <p className="text-lg">{postInfo.content}</p>
-      </div>
-      { postInfo.comments.length > 0 && <div className="w-full p-2 flex flex-col space-y-2 rounded-md bg-gray-200">
-        {postInfo.comments.map((comment) => (
-          <div key={comment._id} className="flex justify-between">
-            <span><a href={`/users/${comment.author._id}`} className="font-bold">{comment.author.username}</a>: {comment.content}</span>
-            <button onClick={() => {
-              handleDeleteComment(comment._id);
-            }} className="bg-red-500 text-white rounded-md p-1">Delete</button>
+
+        {/* Post Body */}
+        <p className="text-gray-700 text-base mb-4">{content}</p>
+
+        {/* Number of Comments */}
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold mb-2">Comments ({numberOfComments})</h3>
+          <div className="divide-y divide-gray-300">
+            {comments.map((comment, index) => (
+              <div key={index} className="flex items-center justify-between py-2">
+                <div>
+                  <p className="text-gray-600 font-semibold">{comment.author.username}:</p>
+                  <p className="ml-4 text-gray-700">{comment.content}</p>
+                </div>
+                <button
+                  className="text-red-500 hover:text-red-700"
+                  onClick={() => handleDeleteComment(comment._id)}
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>}
-      <div className="w-full p-2 flex flex-col space-y-2 rounded-md bg-gray-200">
-        <form onClick={handleComment}>
-          <input id="comment" name="comment" onChange={(e) => {
-              setCommentContent(e.target.value);
-            }} type="text" className="w-full border border-1 border-black rounded-md" />
-          <button className="border border-1 bg-blue-500 text-white rounded-md p-1">Add Comment</button>
-        </form>
+        </div>
+
+        {/* Delete Post Button */}
+        <div className="mt-6">
+          <button
+            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+            onClick={handleDeletePost}
+          >
+            Delete Post
+          </button>
+        </div>
+
+        {/* Create Comment */}
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-2">Create Comment</h3>
+          <textarea
+            className="w-full p-2 border rounded-md"
+            rows="4"
+            placeholder="Enter your comment..."
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+          ></textarea>
+          <button
+            className="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            onClick={handleCreateComment}
+          >
+            Submit Comment
+          </button>
+        </div>
       </div>
     </div>
   );
-}
+};
 
 export default Post;

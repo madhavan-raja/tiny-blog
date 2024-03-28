@@ -1,30 +1,36 @@
-function Post({postInfo}) {
+const Post = ({ postInfo }) => {
+  const { _id, title, author, tags, content, comments } = postInfo;
+  const numberOfComments = comments.length;
+
+
   return (
-    <div className="p-4 rounded-md bg-gray-100 flex flex-col space-y-2">
-      <a
-        href={`/posts/${postInfo._id}`}
-        className="underline-offset-2 hover:underline"
-      >
-        <h1 className="text-xl">{postInfo.title}</h1>
-      </a>
-      <span className="text-sm">
-        By{" "}
-        <a
-          href={`/users/${postInfo.author._id}`}
-          className="underline-offset-2 hover:underline"
-        >
-          {postInfo.author.username}
-        </a>
-      </span>
-      <div className="flex flex-row space-x-2">
-        {postInfo.tags.map((tag) => <span key={tag} className="text-sm bg-gray-200 rounded-md p-1">{tag.name}</span>)}
-      </div>
-      <p className="text-lg">{postInfo.content}</p>
-      <div className="w-full p-2 flex flex-col space-y-2 rounded-md bg-gray-200">
-        {postInfo.comments.length} comment{postInfo.comments.length != 1 ? "s" : ""}
+    <div className="container mx-auto p-4">
+      <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+        <h2 className="text-xl font-bold">
+          <a href={`/posts/${_id}`} className="text-blue-500 hover:underline">{title}</a>
+        </h2>
+
+        <div className="text-sm text-gray-600">
+          {/* <span className="text-sm text-gray-600">By {author.username}</span> */}
+          By{" "} <a href={`/users/${author._id}`} className="hover:underline">{author.username}</a>
+        </div>
+
+        <div className="mb-4">
+          {tags.map((tag, index) => (
+            <a key={index} href={`/tags/${tag._id}`} className="inline-block bg-gray-200 rounded-full px-2 py-1 text-xs font-semibold text-gray-700 mr-2 hover:underline">
+              {tag.name}
+            </a>
+          ))}
+        </div>
+
+        <p className="text-gray-700 text-base">{content}</p>
+
+        <div className="mt-6">
+          <p className="text-gray-600">{numberOfComments} {numberOfComments === 1 ? 'Comment' : 'Comments'}</p>
+        </div>
       </div>
     </div>
   );
-}
+};
 
 export default Post;

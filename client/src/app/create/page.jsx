@@ -4,25 +4,26 @@ import { useState } from "react";
 import { useRouter } from 'next/navigation'
 import { useCookies } from 'next-client-cookies';
 
-export default function Create() {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [tags, setTags] = useState([]);
-  const [isSentSuccessfully, setSentSuccessfully] = useState(false);
+const CreatePost = () => {
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [tags, setTags] = useState('');
 
   const cookies = useCookies();
-
   const router = useRouter()
+
+  const token = cookies.get('token');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     try {
-      const token = cookies.get('token');
       let res = await fetch("/api/posts/", {
         method: 'POST',
         body: JSON.stringify({
-          title, tags, content
+          title,
+          tags: ([] + tags.split(' ').map(tag => tag.trim())),
+          content
         }),
         headers: {
           'content-type': 'application/json',
@@ -36,9 +37,6 @@ export default function Create() {
         return router.push("/login")
       }
 
-      setSentSuccessfully(res.status == 200)
-
-      console.log(res);
       router.push(`/posts/${res._id}`)
     }
     catch (err) {
@@ -47,27 +45,69 @@ export default function Create() {
   }
 
   return (
-    <main>
-      <div className="py-20 max-w-4xl mx-auto flex flex-col space-y-4">
-        <form onSubmit={isSentSuccessfully ? () => {} : handleSubmit}>
-          <label>Title:</label>
-          <input id="title" onChange={(e) => {
-              setTitle(e.target.value);
-            }} className="border border-1 border-black rounded-md" />
+    <div className="py-20 max-w-4xl mx-auto flex flex-col space-y-4">
+      <div className="container mx-auto p-20">
+        <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+          <h2 className="text-2xl font-bold mb-4">Create New Post</h2>
 
-          <label>Tags:</label>
-          <input id="tags" onChange={(e) => {
-              setTags(e.target.value.split(" "));
-            }} className="border border-1 border-black rounded-md" />
+          {/* Title */}
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="title">
+              Title
+            </label>
+            <input
+              className="w-full p-2 border rounded-md"
+              type="text"
+              id="title"
+              placeholder="Enter post title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
 
-          <label>Content:</label>
-          <input id="content" onChange={(e) => {
-              setContent(e.target.value);
-            }} className="border border-1 border-black rounded-md" />
+          {/* Content */}
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="content">
+              Content
+            </label>
+            <textarea
+              className="w-full p-2 border rounded-md"
+              rows="4"
+              id="content"
+              placeholder="Enter post content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+            ></textarea>
+          </div>
 
-          <button type="submit" className="border border-1 bg-gray-200">Create Post</button>
-        </form>
+          {/* Tags */}
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="tags">
+              Tags (space-separated)
+            </label>
+            <input
+              className="w-full p-2 border rounded-md"
+              type="text"
+              id="tags"
+              placeholder="Enter tags"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+            />
+          </div>
+
+          {/* Submit Button */}
+          <div className="text-center">
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              onClick={handleSubmit}
+            >
+              Create Post
+            </button>
+          </div>
+        </div>
       </div>
-    </main>
+    </div>
   );
-}
+};
+
+export default CreatePost;
